@@ -1,0 +1,11 @@
+<button routerLink="add">+</button>
+<ul>
+  <li class="text" *ngFor="let order of orders | async">
+    <img [src]="order.url" *ngIf="order.url" style="width: 24px; height: 24px;">
+    {{order.name}} -- {{order.id}}
+    <button (click)="deleteOrder(order)">Delete</button>
+  </li>
+</ul>
+
+
+

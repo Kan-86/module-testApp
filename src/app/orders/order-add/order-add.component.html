@@ -1,0 +1,25 @@
+<h3 Add Order></h3>
+<form [formGroup]="orderFormGroup" (ngSubmit)="addOrder()">
+  <label>
+    Order Name:
+    <input type="text" formControlName="name">
+  </label>
+
+  <input type="file" (change)="uploadFile($event)" accept="image/*">
+
+  <button type="submit">Add</button>
+
+</form>
+<div>
+  <image-cropper
+    style="width: 512px; height: 512px; float:left;"
+    [imageChangedEvent]="imageChangeEvent"
+    format="png"
+    (imageCropped)="imageCropped($event)"
+    [aspectRatio]="4 / 3"
+    [resizeToWidth]="128"
+    [onlyScaleDown]="true"
+    [roundCropper]="true"
+    [cropperMinWidth]="128"></image-cropper>
+  <img [src]="croppedImage" style="width: 128px; height: 128px; float: left;" >
+</div>
