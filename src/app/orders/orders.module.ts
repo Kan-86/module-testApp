@@ -7,6 +7,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { FilesModule } from '../files/files.module';
 import { OrderAddComponent } from './order-add/order-add.component';
 import {ImageCropperModule} from 'ngx-image-cropper';
+import {RouterModule} from "@angular/router";
 
 @NgModule({
   declarations: [OrderListComponent, OrderAddComponent],
@@ -15,7 +16,8 @@ import {ImageCropperModule} from 'ngx-image-cropper';
     OrdersRoutingModule,
     ReactiveFormsModule,
     FilesModule,
-    ImageCropperModule
+    ImageCropperModule,
+    RouterModule,
   ]
 })
 export class OrdersModule { }

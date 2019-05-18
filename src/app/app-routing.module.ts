@@ -11,8 +11,8 @@ const routes: Routes = [
     loadChildren: './orders/orders.module#OrdersModule'
   },
   {
-    path: 'products',
-    loadChildren: './products/products.module#ProductsModule'
+    path: 'orders',
+    loadChildren: './orders/orders.module#OrdersModule'
   },
   {
     path: '',

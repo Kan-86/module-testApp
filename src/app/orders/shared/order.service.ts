@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
 import {AngularFirestore} from '@angular/fire/firestore';
-import {from, Observable} from 'rxjs';
+import {from, Observable, throwError} from 'rxjs';
 import {Order} from './order.model';
-import {first, map, switchMap, tap} from 'rxjs/operators';
+import {catchError, first, map, switchMap, tap} from 'rxjs/operators';
 import {error} from 'selenium-webdriver';
 import {ImageMetadata} from '../../files/shared/image-metadata';
 import {FileService} from '../../files/shared/file.service';
+import {HttpClient} from '@angular/common/http';
+
+const collection_path = 'orders';
 
 @Injectable({
   providedIn: 'root'
@@ -13,17 +16,24 @@ import {FileService} from '../../files/shared/file.service';
 export class OrderService {
 
   constructor(private db: AngularFirestore,
-              private fs: FileService) { }
+              private fs: FileService,
+              private http: HttpClient) { }
 
   getOrders(): Observable<Order[]> {
-    return this.db.collection<Order>('orders').snapshotChanges()
+    return this.db
+      .collection<Order>(collection_path)
+      // This will return an Observable
+      .snapshotChanges()
       .pipe(
         map(actions => {
+          // actions is an array of DocumentChangeAction
           return actions.map(action => {
             const data = action.payload.doc.data() as Order;
-            return {id: action.payload.doc.id
-              , name: data.name
-            , pictureId: data.pictureId};
+            return {
+              id: action.payload.doc.id,
+              name: data.name,
+              pictureId: data.pictureId
+            };
           });
         })
       );
@@ -64,17 +74,32 @@ export class OrderService {
   addOrderWithImage(order: Order, imageMeta: ImageMetadata)
     : Observable<Order> {
     if (imageMeta && imageMeta.fileMeta
-      && imageMeta.fileMeta.name && imageMeta.fileMeta.type
-      && (imageMeta.imageBlob || imageMeta.base64Image)) {
-      return this.fs.uploadImage(imageMeta)
+      && imageMeta.fileMeta.name && imageMeta.fileMeta.type &&
+      (imageMeta.imageBlob || imageMeta.base64Image)) {
+      const endPointUrl =
+        'https://us-central1-productappexample.cloudfunctions.net/orders';
+      const porderToSend: any = {
+        name: order.name,
+        image: {
+          base64: imageMeta.base64Image,
+          name: imageMeta.fileMeta.name,
+          type: imageMeta.fileMeta.type,
+          size: imageMeta.fileMeta.size
+        }
+      };
+      return this.http.post<Order>(endPointUrl, porderToSend);
+      /*return this.fs.uploadImage(imageMeta)
         .pipe(
-          switchMap(metaData => {
-            order.pictureId = metaData.id;
-            return this.addOrder(order);
+          switchMap(metadata => {
+            product.pictureId = metadata.id;
+            return this.addProduct(product);
+          }),
+          catchError((err, caught) => {
+            return throwError(err);
           })
-        );
+        );*/
     } else {
-      throw Error('You need better metadata');
+      return throwError('You need better metadata');
     }
   }
 

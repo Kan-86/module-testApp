@@ -25,28 +25,24 @@ export class FileService {
   }
 
   upload(file: File): Observable<FileMetaData> {
-    return this.addFileMetaData({
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      lastModified: file.lastModified
-    }
+    const uid = this.db.createId();
+    return defer(() =>
+      this.storage.ref('product-pictures/' + uid)
+        .put(file, {
+          customMetadata: {
+            originalName: file.name
+          }
+        })
+        .then()
     ).pipe(
-      switchMap(fileMeta => {
-        return defer(() =>
-        this.storage.ref('product-pictures/' + fileMeta.id)
-          .put(file)
-          .then()
-        ).pipe(
-          map(fileRef => {
-            return fileMeta;
-          })
-        );
+      map(fileRef => {
+        fileRef.id = uid;
+        return fileRef;
       })
     );
   }
 
-  addFileMetaData(meta: FileMetaData): Observable<FileMetaData> {
+  /*addFileMetaData(meta: FileMetaData): Observable<FileMetaData> {
     return defer(() => this.db.collection('files')
       .add(meta)
     ).pipe(
@@ -55,7 +51,7 @@ export class FileService {
           return meta;
         })
       );
-  }
+  }*/
 
   getFileUrl(id: string): Observable<any> {
     return this.storage.ref('product-pictures/' + id)

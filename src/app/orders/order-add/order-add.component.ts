@@ -17,9 +17,10 @@ import {isNullOrUndefined, isUndefined} from 'util';
 export class OrderAddComponent implements OnInit {
   orderFormGroup: FormGroup;
   fileToUpload: File;
-  imageChangeEvent: any = '';
+  imageChangedEvent: any = '';
   croppedImage: any = '';
   croppedBlob: Blob;
+  imageChangeEvent: any = '';
 
   constructor(private router: Router,
               private activatedRoute: ActivatedRoute,
@@ -34,23 +35,28 @@ export class OrderAddComponent implements OnInit {
   }
 
 
-  addOrder(order: Order) {
+  addOrder() {
     const orderData = this.orderFormGroup.value;
-    debugger;
     this.os.addOrderWithImage(
       orderData,
       this.getMetaDataForImage()
     ).subscribe(order => {
       this.router.navigate(['../'],
         {relativeTo: this.activatedRoute});
-    });
+    },
+      error1 => {
+      window.alert('Bad stuff happened: ' + error1); }
+      );
+
   }
 
   private getMetaDataForImage(): ImageMetadata {
-
-
-      const fileBeforeCrop = this.imageChangeEvent.target.files[0];
-      return  {
+    if (this.imageChangedEvent && this.imageChangedEvent.target &&
+      this.imageChangedEvent.target.files &&
+      this.imageChangedEvent.target.files.length > 0) {
+      const fileBeforeCrop = this.imageChangedEvent.target.files[0];
+      return {
+        base64Image: this.croppedImage,
         imageBlob: this.croppedBlob,
         fileMeta: {
           name: fileBeforeCrop.name,
@@ -58,11 +64,12 @@ export class OrderAddComponent implements OnInit {
           size: fileBeforeCrop.size
         }
       };
+    }
     return undefined;
   }
 
   uploadFile(event) {
-    this.imageChangeEvent = event;
+    this.imageChangedEvent = event;
     // Going away soon :D
     // this.fileToUpload = event.target.files[0];
   }
@@ -72,7 +79,7 @@ export class OrderAddComponent implements OnInit {
     this.croppedImage = event.base64;
     this.croppedBlob = event.file;
     // Converting image for upload
-    const fileBeforeCrop = this.imageChangeEvent.target.files[0];
+    const fileBeforeCrop = this.imageChangedEvent.target.files[0];
     this.fileToUpload = new File(
       [event.file],
       fileBeforeCrop.name
